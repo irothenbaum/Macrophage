@@ -3,8 +3,9 @@ require.config({
     paths: {
         sprites : 'game/sprites',
         entities : 'game/entities',
-        
+        TwoCylinder : 'twocylinder',
         underscore : 'underscore-min'
+            
     },
     shim: {
         TwoCylinder : {

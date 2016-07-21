@@ -1,18 +1,4 @@
-(function (root, factory) {
-    if(typeof module === "object" && module.exports){
-        module.exports = factory(require("underscore"));
-    } else if(typeof define === "function" && define.amd){
-        define("TwoCylinder",["underscore"], factory);
-    } else {
-        root["TwoCylinder"] = factory(root._);
-    }
-}(this, function(_) {
-    return new function(){
-        var TwoCylinder = this;
-        this.Engine = {};
-        this.Entities = {};
-        this.IO = {};
-        this.Sprites = {};
+(function (root, factory) {if(typeof module === "object" && module.exports){module.exports = factory(require("underscore"));} else if(typeof define === "function" && define.amd){define("TwoCylinder",["underscore"], factory);} else {root["TwoCylinder"] = factory(root._);}}(this, function(_) {return new function(){var TwoCylinder = this;this.Engine = {};this.Entities = {};this.IO = {};this.Sprites = {};
 /*
     This script contains helper objects and functions that can be used by all classes
 */
@@ -88,159 +74,243 @@
 // TODO:
 // lineCollidesBox
 // lineCollidesLine
-// lineCollidesPoint
 // boxCollidesLine
-// pointCollidesLine
 
-TwoCylinder.Engine.Geometry = {
+TwoCylinder.Engine.Geometry = (function(){
+    var Geometry = {
 /***************************************************
  * BOXES
  ***************************************************/
-    boxCollidesBox : function(box1, box2){
-        // both box1 and box 2 must have { x, y, width, height } properties
-        // if any part of box1's X is within box2's
-        var xOverlap = (
-            ( 
-                ( box1.origin_x <= box2.origin_x )
-                && 
-                ( (box1.origin_x + box1.width) > box2.origin_x )
-            )
-            ||
-            ( 
-                ( box2.origin_x <= box1.origin_x )
-                && 
-                ( (box2.origin_x + box2.width) > box1.origin_x )
-            )
-        );
-        var yOverlap = (
-            ( 
-                ( box1.origin_y <= box2.origin_y ) 
-                && 
-                ( (box1.origin_y + box1.height) > box2.origin_y )
-            )
-            ||
-            ( 
-                ( box2.origin_y <= box1.origin_y )
-                && 
-                ( (box2.origin_y + box2.height) > box1.origin_y )
-            )
-        );
+        boxCollidesBox : function(box1, box2){
+            // both box1 and box 2 must have { x, y, width, height } properties
+            // if any part of box1's X is within box2's
+            var xOverlap = (
+                ( 
+                    ( box1.origin_x <= box2.origin_x )
+                    && 
+                    ( (box1.origin_x + box1.width) > box2.origin_x )
+                )
+                ||
+                ( 
+                    ( box2.origin_x <= box1.origin_x )
+                    && 
+                    ( (box2.origin_x + box2.width) > box1.origin_x )
+                )
+            );
+            var yOverlap = (
+                ( 
+                    ( box1.origin_y <= box2.origin_y ) 
+                    && 
+                    ( (box1.origin_y + box1.height) > box2.origin_y )
+                )
+                ||
+                ( 
+                    ( box2.origin_y <= box1.origin_y )
+                    && 
+                    ( (box2.origin_y + box2.height) > box1.origin_y )
+                )
+            );
+            
+            return xOverlap && yOverlap;
+        }
+        ,boxCollidesCircle : function(box, circle){
+            var point1 = {x:box.origin_x, y:box.origin_y};
+            var point2 = {x:box.origin_x + box.width, y:box.origin_y};
+            var point3 = {x:box.origin_x + box.width, y:box.origin_y + box.height};
+            var point4 = {x:box.origin_x, y:box.origin_y + box.height};
+            
+            var line1 = [point1,point2];
+            var line2 = [point2,point3];
+            var line3 = [point3,point4];
+            var line4 = [point4,point1];
+            
+            var retVal =  
+                Geometry.pointCollidesBox(circle, box) 
+                || Geometry.lineCollidesCircle(line1, circle, true)
+                || Geometry.lineCollidesCircle(line2, circle, true) 
+                || Geometry.lineCollidesCircle(line3, circle, true)  
+                || Geometry.lineCollidesCircle(line4, circle, true);
+            
+            return retVal;
+        }
+        ,boxCollidesPoint : function(box, point){
+            return (
+                (
+                    ( point.x >= box.origin_x ) 
+                    && 
+                    ( (box.origin_x + box.width) >= point.x )
+                )
+                &&
+                (
+                    ( point.y >= box.origin_y ) 
+                    && 
+                    ( (box.origin_y + box.height) >= point.y )
+                )
+            );
+        }
         
-        return xOverlap && yOverlap;
-    }
-    ,boxCollidesCircle : function(box, circle){
-        // Gonna give a shit attempt at implementing this http://stackoverflow.com/questions/401847/circle-rectangle-collision-detection-intersection
-        var point1 = {x:box.origin_x, y:box.origin_y};
-        var point2 = {x:box.origin_x + box.width, y:box.origin_y};
-        var point3 = {x:box.origin_x + box.width, y:box.origin_y+box.height};
-        var point4 = {x:box.origin_x, y:box.origin_y+box.height};
-        
-        var line1 = {x1 : point1.x, y1:point1.y, x2:point2.x,y2:point2.y};
-        var line2 = {x1 : point2.x, y1:point2.y, x2:point3.x,y2:point3.y};
-        var line3 = {x1 : point3.x, y1:point3.y, x2:point4.x,y2:point4.y};
-        var line4 = {x1 : point4.x, y1:point4.y, x2:point1.x,y2:point1.y};
-        
-        var retVal = 
-            TwoCylinder.Engine.Geometry.pointCollidesBox(circle, box)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line1, circle)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line2, circle)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line3, circle)
-            || TwoCylinder.Engine.Geometry.lineCollidesCircle(line4, circle);
-        return retVal;
-    }
-    ,boxCollidesPoint : function(box, point){
-        return (
-            (
-                ( point.x >= box.origin_x ) 
-                && 
-                ( (box.origin_x + box.width) >= point.x )
-            )
-            &&
-            (
-                ( point.y >= box.origin_y ) 
-                && 
-                ( (box.origin_y + box.height) >= point.y )
-            )
-        );
-    }
-    
 /***************************************************
  * CIRCLES
  ***************************************************/
-    ,circleCollidesCircle : function(circle1, circle2){
-        return this.distanceToPoint(circle1,circle2) < (circle1.radius + circle2.radius);
-    }
-    ,circleCollidesBox : function(circle, box){
-        return TwoCylinder.Engine.Geometry.boxCollidesCircle(box,circle);
-    }
-    ,circleCollidesLine : function(circle,line){
-        return TwoCylinder.Enginer.Geometry.lineCollidesCircle(line,cricle);
-    }
-    ,circleCollidesPoint : function(circle, point){
-        return TwoCylinder.Engine.Geometry.pointCollidesCircle(point, circle);
-    }
+        ,circleCollidesCircle : function(circle1, circle2){
+            return this.distanceToPoint(circle1,circle2) < (circle1.radius + circle2.radius);
+        }
+        ,circleCollidesBox : function(circle, box){
+            return Geometry.boxCollidesCircle(box,circle);
+        }
+        ,circleCollidesLine : function(circle,line, isSegment){
+            return Geometry.lineCollidesCircle(line,cricle,isSegment);
+        }
+        ,circleCollidesPoint : function(circle, point){
+            return Geometry.pointCollidesCircle(point, circle);
+        }
 
-    
+        
 /***************************************************
  * LINES
  ***************************************************/
-    ,lineCollidesCircle : function(line, circle){
-        // Gonna give a shit attempt at implementing this http://mathworld.wolfram.com/Circle-LineIntersection.html
-        var dx = line.x2 - line.x1;
-        var dy = line.y2 - line.y1;
-        var dr = Math.sqrt((dx*dx) + (dy*dy));
-        var r2 = circle.radius * circle.radius;
-        var D = (line.x1*line.y2) - (line.x2-line.y1);
+        // This function returns an array of up to length 2 with points indicating at what points
+        // the given circle is intersected by the given line
+        ,lineIntersectsCircle : function(line, circle, isSegment){
+            var b = line[0];
+            var a = line[1];
+            
+            // Calculate the euclidean distance between a & b
+            var eDistAtoB = Math.sqrt( Math.pow(b.x-a.x, 2) + Math.pow(b.y-a.y, 2) );
+
+            // compute the direction vector d from a to b
+            var d = { x : (b.x-a.x)/eDistAtoB, y : (b.y-a.y)/eDistAtoB };
+
+            // Now the line equation is x = dx*t + ax, y = dy*t + ay with 0 <= t <= 1.
+
+            // compute the value t of the closest point to the circle center (cx, cy)
+            var t = (d.x * (circle.x-a.x)) + (d.y * (circle.y-a.y));
+
+            // compute the coordinates of the point e on line and closest to c
+            var e = {
+                x : (t * d.x) + a.x,
+                y : (t * d.y) + a.y 
+            }
+
+            // Calculate the euclidean distance between circle & e
+            eDistCtoE = Math.sqrt( Math.pow(e.x-circle.x, 2) + Math.pow(e.y-circle.y, 2) );
+
+            var retVal = [];
+            
+            // test if the line intersects the circle
+            if( eDistCtoE < circle.radius ) {
+                // compute distance from t to circle intersection point
+                var dt = Math.sqrt( Math.pow(circle.radius, 2) - Math.pow(eDistCtoE, 2));
+
+                // compute first intersection point
+                var f = { 
+                    x : ((t-dt) * d.x) + a.x,
+                    y : ((t-dt) * d.y) + a.y
+                };
+                
+                if(!isSegment || Geometry.lineCollidesPoint(line, f, true)){
+                    retVal.push(f);
+                }
+
+                // compute second intersection point
+                var g = {
+                    x : ((t+dt) * d.x) + a.x,
+                    y : ((t+dt) * d.y) + a.y
+                };
+                
+                if(!isSegment || Geometry.lineCollidesPoint(line, g, true)){
+                    retVal.push(g);
+                }
+            } else if (parseInt(eDistCtoE) === parseInt(circle.radius)) {
+                if(!isSegment || Geometry.lineCollidesPoint(line, e, true)){
+                    retVal.push(e);
+                }
+            } else {
+                // do nothing, no intersection
+            }
+            
+            return retVal;
+        }
         
-        var incidence = r2 * ( dr * dr ) - ( D*D );
+        // true IFF a line passes through or tangent to a given circle
+        ,lineCollidesCircle : function(line, circle, isSegment){
+            var intersects = Geometry.lineIntersectsCircle(line, circle, isSegment);
+            return intersects.length > 0 || Geometry.pointCollidesCircle(line[0],circle);
+        }
         
-        return incidence > 0;
-    }
-    
-    
+        ,lineCollidesPoint : function(line, point, isSegment){
+            var angleToPoint1 = Geometry.angleToPoint(line[0],point);
+            var angleToPoint2 = Geometry.angleToPoint(line[1],point);
+            
+            var retVal = angleToPoint1 == angleToPoint2;
+
+            // if the angle is off, we swap the order of two of the points for one of the measurements
+            // this simulates the 180 degree check
+            if(!retVal){
+                angleToPoint2 = Geometry.angleToPoint(point, line[1]);
+                retVal = angleToPoint1 == angleToPoint2;
+            }
+
+            if(retVal && isSegment){
+                retVal = Geometry.distanceToPoint(line[0],point) + Geometry.distanceToPoint(line[1],point) 
+                        == Geometry.distanceToPoint(line[0],line[1]);
+            }
+            
+            return retVal;
+        }
+        
+        
 /***************************************************
  * POINTS
  ***************************************************/
-    ,pointCollidesCircle : function(point, circle){
-        return TwoCylinder.Engine.Geometry.distanceToPoint(point,circle) <= circle.radius;
-    }
-    ,pointCollidesBox : function(point, box){
-        return TwoCylinder.Engine.Geometry.boxCollidesPoint(box, point);
-    }
-    ,pointCollidesPoint : function(point1, point2){
-        return ( 
-                ( point1.x == point2.x ) 
-                && 
-                ( point1.y == point2.y ) 
-        );
-    }
-    
+        ,pointCollidesCircle : function(point, circle){
+            return Geometry.distanceToPoint(point,circle) <= circle.radius;
+        }
+        ,pointCollidesBox : function(point, box){
+            return Geometry.boxCollidesPoint(box, point);
+        }
+        ,pointCollidesPoint : function(point1, point2){
+            return ( 
+                    ( point1.x == point2.x ) 
+                    && 
+                    ( point1.y == point2.y ) 
+            );
+        }
+        ,pointCollidesLine : function(point, line){
+            return Geometry.lineCollidesPoint(line,point);
+        }
+        
 /***************************************************
  * ANGLES AND DISTANCES
  ***************************************************/
-    ,distanceToPoint : function(point1, point2){
-        var x = point1.x - point2.x;
-        var y = point1.y - point2.y;
+        ,distanceToPoint : function(point1, point2){
+            var x = point1.x - point2.x;
+            var y = point1.y - point2.y;
 
-        return Math.sqrt( x*x + y*y );
-    }
-    ,angleToPoint : function(point1, point2, inDegrees){
-        var radians = Math.atan2(point2.y - point1.y, point2.x - point1.x);
-        return inDegrees ? ( radians * 180 / Math.PI ) : radians;
-    }
-    ,pointToPoint : function(point1, point2, inDegrees){
-        return {
-            distance : TwoCylinder.Engine.Geometry.distanceToPoint(point1,point2,inDegrees)
-            ,angle : TwoCylinder.Engine.Geometry.angleToPoint(point1,point2,inDegrees)
-        };
-    }
-    ,pointFromAngle : function(point1, angle, distance, inDegrees){
-        return{
-            x : point1.x + Math.cos(angle) * distance
-            ,y : point1.y + Math.sin(angle) * distance
-        };
-    }
-};
+            return Math.sqrt( x*x + y*y );
+        }
+        ,angleToPoint : function(point1, point2, inDegrees){
+            var radians = Math.atan2(point2.y - point1.y, point2.x - point1.x);
+            return inDegrees ? ( radians * 180 / Math.PI ) : radians;
+        }
+        ,pointToPoint : function(point1, point2, inDegrees){
+            return {
+                distance : Geometry.distanceToPoint(point1,point2,inDegrees)
+                ,angle : Geometry.angleToPoint(point1,point2,inDegrees)
+            };
+        }
+        ,pointFromAngle : function(point1, angle, distance, inDegrees){
+            return{
+                x : point1.x + Math.cos(angle) * distance,
+                y : point1.y + Math.sin(angle) * distance
+            };
+        }
+    };
+    
+    
+    return Geometry;
+})(); 
+
 /*
     This script contains helper objects and functions that can be used by all classes
 */
@@ -256,7 +326,7 @@ TwoCylinder.Engine.Generic = TwoCylinder.Engine.Root.extend({
         return this._bounding;
     }
     ,setBounding : function(b){
-        if(!b && ! (b instanceof TwoCylinder.Enginer.Bounding)){
+        if(!b && ! (b instanceof TwoCylinder.Engine.Bounding)){
             throw "All objects must have a true bounding";
         }
         return this._bounding = b;
@@ -284,8 +354,8 @@ TwoCylinder.Engine.Appearance = TwoCylinder.Engine.Generic.extend({
         context.stroke();
     }
     
-    ,draw : function(canvas,x,y,rotation,scale,options){
-        return this.drawFunction.apply(canvas,[x,y,rotation,scale,options]);
+    ,draw : function(canvas,x,y,rotation,scale,entity){
+        return this.drawFunction.apply(canvas,[x,y,rotation,scale,entity]);
     }
 });
 /*
@@ -328,8 +398,14 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
     // draw is called by a view.
     // the view passes a callback function which is called IFF this instance is to be drawn
     // passed to that function is important information that will be forwarded to the Instance's this.__appearance
-    ,draw : function(canvas, center_x, center_y, view_rotation, view_scale){
-        this.getAppearance().draw(canvas, center_x, center_y, view_rotation * this._rotation, view_scale);
+    ,draw : function(view, center_x, center_y){
+        this.getAppearance().draw(
+                view.getCanvas(), 
+                center_x, center_y, 
+                view.getRotation() * this._rotation, 
+                view.getScale(), 
+                this
+        );
     }
     ,preStep: function(worldClock){
         return;
@@ -340,6 +416,10 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
                 x : this.getBounding().getCenter().x + this._speed * Math.cos(this.getDirection())
                 ,y : this.getBounding().getCenter().y + this._speed * Math.sin(this.getDirection())
             });
+            
+            if(this.getAppearance()){
+                this.getAppearance().getBounding().setCenter(this.getBounding().getCenter());
+            }
         }
     }
     ,postStep: function(worldClock){
@@ -442,9 +522,6 @@ COLLISIONS AND COLLISION CHECKING
     
     // This function defines how to draw this instance
     ,getAppearance : function(){
-        if(this.__appearance){
-            this.__appearance.getBounding().setCenter(this.getBounding().getCenter());
-        }
         return this.__appearance; 
     }
     
@@ -550,10 +627,6 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
         this.__ios = [];
         this.__key = 0;
     }
-    ,getCanvas : function(){
-        return this.__canvas;
-    }
-
     ,clearCanvas : function(){
         this.__canvas.getContext('2d').clearRect(0,0,this.__canvas.width,this.__canvas.height);
     }
@@ -587,11 +660,9 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
                 var that = this;
                 //then we draw the instance with this view's translations & transformations included
                 inst.draw(
-                    this.__canvas
+                    this
                     ,inst.getBounding().getCenter().x - this.getBounding().getContainingRectangle().origin_x
                     ,inst.getBounding().getCenter().y - this.getBounding().getContainingRectangle().origin_y
-                    ,this._rotation
-                    ,this._scale
                 );
             }
         }
@@ -602,8 +673,29 @@ TwoCylinder.Engine.View = TwoCylinder.Engine.Generic.extend({
             ios[i].draw();
         }
     }
+/****************************************************************************
+GETTER AND SETTER FUNCTIONS
+****************************************************************************/
+    ,getCanvas : function(){
+        return this.__canvas;
+    }
+    ,getWorld : function(){
+        return this.__world;
+    }
     ,setWorld : function(world){
         this.__world = world;
+    }
+    ,getRotation : function(){
+        return this._rotation;
+    }
+    ,setRotation : function(r){
+        this._rotation = r;
+    }
+    ,getScale : function(){
+        return this._scale;
+    }
+    ,setRotation : function(s){
+        this._scale = s;
     }
 /****************************************************************************
 IO FUNCTIONS
@@ -762,8 +854,8 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
  INSTANCE FUNCTIONS
  ****************************************************************************/    
     ,removeInstance : function(instance){
-        this.__removeFromCollisionGroup(instance);
         if(instance.__id){
+            this.__removeFromCollisionGroup(instance);
             for(var i=0; i<this.__instances.length; i++){
                 if(this.__instances[i].__id == instance.__id){
                     this.__instances.splice(i,1);
@@ -842,7 +934,8 @@ HELPER FUNCTIONS
     }
 });
 /*
-    Profiles are used to remove the ambiguity with determining bounding box
+    Backgrounds are objects that control how the game background should appear. 
+    At most, there should be one per world. 
 */
 
 TwoCylinder.Engine.Background = TwoCylinder.Engine.Root.extend({
@@ -1202,16 +1295,29 @@ TwoCylinder.IO.Touch = TwoCylinder.Engine.Generic.extend({
         },false);
     }
     /*
-     * This function can be overriden by extended objects, but by default we do nothing
+     * If this touch has an appearance, we draw it
      */
     ,draw : function(){
-        return true;
+        if(this.getAppearance()){
+            this.getAppearance().draw(
+                this.__view.getCanvas(), 
+                this.getBounding().getCenter().x,
+                this.getBounding().getCenter().y, 
+                this.__view.getRotation(),
+                this.__view.getScale(),
+                this
+            );
+        }
     }
     /*
      * Appearance will be important for extended objects wishing to give the touch zones a visual represenation
      */
     ,setAppearance : function(app){
         this.__appearance = app;
+    }
+    
+    ,getAppearance : function(app){
+        return this.__appearance;
     }
     
     /*
@@ -1529,8 +1635,8 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
     ,offOperate : function(){
         delete this.__operateFunction; 
     }
-    ,draw : function(){
-        options = {
+    ,getDrawOptions : function(){
+        var options = {
             stick : this.getBounding().getCenter()
             ,operating : this.isDown()
         }
@@ -1539,17 +1645,8 @@ TwoCylinder.IO.Joystick = TwoCylinder.IO.Touch.extend({
             var radius = Math.min(this._defaultRadius / this.__pullRatio, this._previousEvent.speed);
             options.stick = TwoCylinder.Engine.Geometry.pointFromAngle(options.stick, this._previousEvent.angle, radius);
         }
-
-        this.__appearance.draw(
-            this.__view.getCanvas()
-            ,this.getBounding().getCenter().x
-            ,this.getBounding().getCenter().y
-            ,0
-            ,1
-            ,options
-        );
         
-        return true;
+        return options;
     }
 }); 
 /*
@@ -1568,7 +1665,8 @@ TwoCylinder.Sprites.Joystick = TwoCylinder.Engine.Appearance.extend({
         this._super('initialize',options);
         
     }
-    ,drawFunction : function(x,y,rotation,scale,options){
+    ,drawFunction : function(x,y,rotation,scale,joystick){
+        var options = joystick.getDrawOptions();
         var context = this.getContext('2d');
         
         // if the joystick is being operated, we draw the binding circle

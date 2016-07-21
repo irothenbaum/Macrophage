@@ -5,7 +5,7 @@ define([
     'underscore',
     'TwoCylinder',
     'entities/enemy',
-    'entities/player'
+    'entities/player',
 ],
 
 function(_, TwoCylinder, Enemy, Player){
