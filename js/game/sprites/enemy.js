@@ -19,11 +19,10 @@ function(TwoCylinder){
             this._super('initialize',options);
         }
     
-        //drawFunctions should assume the context of the canvas drawing them
-        ,drawFunction : function(x,y,rotation,scale,options){
-            var context = this.getContext('2d');
+        ,draw : function(canvas,x,y,rotation,scale,options){
+            var context = canvas.getContext('2d');
             context.beginPath();
-            context.arc(x, y, 20, 0, 2 * Math.PI, false);
+            context.arc(x, y, 20, 0, 2 * Math.PI/2, false);
             context.fillStyle = 'orange';
             context.fill();
             context.lineWidth = 5;

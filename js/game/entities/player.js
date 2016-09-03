@@ -28,6 +28,7 @@ function(requrie,_,TwoCylinder, PlayerSprite, Bullet){
             this.__isShooting = false;
             this.__shootingDirection = 0;
             this.__shooterTimeOut = null;
+            this.__lastPosition = this.getBounding().getCenter();
             
             this._collisionGroup = 'PLAYER';
         }

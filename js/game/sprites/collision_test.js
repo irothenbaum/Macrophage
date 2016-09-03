@@ -7,9 +7,9 @@ define([
 
 function(TwoCylinder){
     return TwoCylinder.Engine.Appearance.extend({
-        drawFunction : function(x,y,rotation,scale,entity){
+        draw : function(canvas,x,y,rotation,scale,entity){
             color = entity._collision ? '#0f0' : '#f00';
-            var context = this.getContext('2d');
+            var context = canvas.getContext('2d');
             context.beginPath();
             context.fillStyle = color;
             var container = entity.getBounding();

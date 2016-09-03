@@ -342,9 +342,9 @@ TwoCylinder.Engine.Appearance = TwoCylinder.Engine.Generic.extend({
     initialize : function(options){
         this._super('initialize',options);
     }
-    // drawFunctions should assume the context of the canvas drawing them
-    ,drawFunction : function(x,y,rotation,scale,options){
-        var context = this.getContext('2d');
+    
+    ,draw : function(canvas,x,y,rotation,scale,entity){
+        var context = canvas.getContext('2d');
         context.beginPath();
         context.arc(x, y, 20, 0, 2 * Math.PI, false);
         context.fillStyle = 'grey';
@@ -352,10 +352,6 @@ TwoCylinder.Engine.Appearance = TwoCylinder.Engine.Generic.extend({
         context.lineWidth = 5;
         context.strokeStyle = '#333333';
         context.stroke();
-    }
-    
-    ,draw : function(canvas,x,y,rotation,scale,entity){
-        return this.drawFunction.apply(canvas,[x,y,rotation,scale,entity]);
     }
 });
 /*
@@ -401,7 +397,8 @@ TwoCylinder.Engine.Entity = TwoCylinder.Engine.Generic.extend({
     ,draw : function(view, center_x, center_y){
         this.getAppearance().draw(
                 view.getCanvas(), 
-                center_x, center_y, 
+                center_x, 
+                center_y, 
                 view.getRotation() * this._rotation, 
                 view.getScale(), 
                 this
@@ -774,7 +771,11 @@ TwoCylinder.Engine.World = TwoCylinder.Engine.Generic.extend({
     ,start : function(){
         var that = this;
         this.__intervalId = setInterval(function(){
-            that.loop.apply(that,[]);
+            try{
+                that.loop.apply(that,[]);
+            } catch(e) {
+                that.exit();
+            }
         }, 1000 / this._fps);
     }
     
@@ -1665,9 +1666,9 @@ TwoCylinder.Sprites.Joystick = TwoCylinder.Engine.Appearance.extend({
         this._super('initialize',options);
         
     }
-    ,drawFunction : function(x,y,rotation,scale,joystick){
+    ,draw : function(canvas,x,y,rotation,scale,joystick){
         var options = joystick.getDrawOptions();
-        var context = this.getContext('2d');
+        var context = canvas.getContext('2d');
         
         // if the joystick is being operated, we draw the binding circle
         if(options.operating){
