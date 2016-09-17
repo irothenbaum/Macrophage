@@ -2,10 +2,11 @@
     This script contains the player sprite
 */
 define([
-    'TwoCylinder'
+    'TwoCylinder',
+    'sprites/assets/cell_nodule'
 ],
 
-function(TwoCylinder){
+function(TwoCylinder, CellNodule){
     return TwoCylinder.Engine.Appearance.extend({
         initialize : function(){
             options = {
@@ -28,18 +29,21 @@ function(TwoCylinder){
                 {x : 0, y: 1, target: 1},
                 {x : -1, y: 0, target: -1}
             ];
-            this.ballThing = {x : 0, y : 0, target : {x : 0, y : 0}};
             this.meshScale = 30;
-        }
-    
-        ,draw : function(canvas,x,y,rotation,scale,player){
-            var drawingOptions = this.getDrawingOptions(x,y,player);
-            if(!this.previousInfo){
-                this.previousInfo = drawingOptions;
-            }
             
+            this.nucleus = new CellNodule({
+                fill : '#aaf',
+                stroke : '#66d',
+                thickness : 4,
+                radius : 8,
+                wiggle : 20,
+                resistence : 20
+            });
+        }
+        ,draw : function(canvas,x,y,rotation,scale,player){
             var context = canvas.getContext('2d');
             
+            this.nucleus.draw(canvas,x,y,rotation,scale);
             
             context.beginPath();
             // move to the first mesh point
@@ -55,40 +59,15 @@ function(TwoCylinder){
             
             // throw "TEST";
             
-            context.fillStyle = 'white';
+            context.fillStyle = "rgba(255,255,255,0.5)";
             context.fill();
             context.lineWidth = 5;
-            context.strokeStyle = '#ddddaa';
+            context.strokeStyle = 'white';
             context.stroke();
             
             for(var i=0; i<4; i++){
                 this._randomizPoints(this.meshPoints[i]);
             }
-            
-            this._moveBallThing();
-            context.beginPath();
-            context.arc(x + this.ballThing.x, y+ this.ballThing.y, 8, 0, 2 * Math.PI, false);
-            context.fillStyle = '#aaf';
-            context.fill();
-            context.lineWidth = 5;
-            context.strokeStyle = '#99d';
-            context.stroke();
-            
-            this.previousInfo = drawingOptions;
-        }
-        ,getDrawingOptions : function(x,y,player){
-            return {
-                stretchDirection : player.getDirection()
-                ,stretchDistance : player.getSpeed() / 5
-            }
-        }
-        ,_moveBallThing : function(){
-            if(TwoCylinder.Engine.Geometry.distanceToPoint(this.ballThing, this.ballThing.target) < 1) {
-                this.ballThing.target.x = 10 - (Math.random() * 20);
-                this.ballThing.target.y = 10 - (Math.random() * 20);
-            }
-            this.ballThing.x += (this.ballThing.target.x - this.ballThing.x) / 20;
-            this.ballThing.y += (this.ballThing.target.y - this.ballThing.y) / 20;
         }
         ,_randomizPoints : function(meshPoint){
             var isX = !!meshPoint.x;

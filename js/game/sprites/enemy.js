@@ -15,19 +15,25 @@ function(TwoCylinder){
                     ,radius : 20
                 })
             };
+            this.length = 20;
             
             this._super('initialize',options);
         }
     
-        ,draw : function(canvas,x,y,rotation,scale,options){
+        ,draw : function(canvas,x,y,rotation,scale,entity){
             var context = canvas.getContext('2d');
             context.beginPath();
-            context.arc(x, y, 20, 0, 2 * Math.PI/2, false);
+            context.arc(x, y + this.length, this.length, 0, Math.PI, false);
+            context.lineTo(x - this.length, y - this.length);
+            context.arc(x, y - this.length, this.length, 0, Math.PI, false);
+            context.lineTo(x + this.length, y + this.length);
             context.fillStyle = 'orange';
             context.fill();
             context.lineWidth = 5;
             context.strokeStyle = '#000033';
             context.stroke();
+            
+            
         }
     });
 });

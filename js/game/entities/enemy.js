@@ -5,7 +5,7 @@ define([
     'require',
     'underscore',
     'TwoCylinder',
-    'sprites/enemy'
+    'sprites/enemy2'
 ],
 
 function(require,_, TwoCylinder, EnemySprite){
