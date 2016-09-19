@@ -5,24 +5,26 @@ define([
     'require',
     'underscore',
     'TwoCylinder',
+    'sprites/enemy',
     'sprites/enemy2'
 ],
 
-function(require,_, TwoCylinder, EnemySprite){
+function(require,_, TwoCylinder, EnemySprite, EnemySprite2){
     return TwoCylinder.Engine.Entity.extend({
         initialize : function(options){
+            var random = parseInt(Math.random()*2);
             options = _.extend({
                 bounding : new TwoCylinder.Engine.BoundingCircle({
                     x : options.x || 0
                     ,y : options.y || 0
                     ,radius : 20
                 })
-                ,appearance :  new EnemySprite(options)
+                ,appearance :  random ? new EnemySprite(options) : new EnemySprite2(options)
             }
             ,options);
             this._super('initialize',options);
             
-            this.setSpeed(3);
+            this.setSpeed(Math.random()*3);
             this.__targetSpot = this.getPosition();
             
             this.onCollideGroup('PLAYER_BULLET', this.die);
