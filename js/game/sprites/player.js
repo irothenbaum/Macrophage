@@ -3,17 +3,19 @@
 */
 define([
     'TwoCylinder',
-    'sprites/assets/cell_nodule'
+    'sprites/particles/cell_nodule'
 ],
 
 function(TwoCylinder, CellNodule){
     return TwoCylinder.Engine.Appearance.extend({
         initialize : function(){
+            this.meshScale = 30;
+            
             options = {
                 bounding : new TwoCylinder.Engine.BoundingCircle({
                     x : 0
                     ,y : 0
-                    ,radius : 20
+                    ,radius : this.meshScale
                 })
             };
             this._super('initialize',options);
@@ -29,7 +31,6 @@ function(TwoCylinder, CellNodule){
                 {x : 0, y: 1, target: 1},
                 {x : -1, y: 0, target: -1}
             ];
-            this.meshScale = 30;
             
             this.nucleus = new CellNodule({
                 fill : '#aaf',
@@ -37,12 +38,13 @@ function(TwoCylinder, CellNodule){
                 thickness : 4,
                 radius : 8,
                 wiggle : 20,
-                resistence : 20
+                friction : 20
             });
         }
         ,draw : function(canvas,x,y,rotation,scale,player){
             var context = canvas.getContext('2d');
             
+            this.nucleus.move();
             this.nucleus.draw(canvas,x,y,rotation,scale);
             
             context.beginPath();

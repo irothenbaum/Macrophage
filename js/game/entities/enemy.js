@@ -24,12 +24,22 @@ function(require,_, TwoCylinder, EnemySprite, EnemySprite2){
             ,options);
             this._super('initialize',options);
             
-            this.setSpeed(Math.random()*3);
+            this._maxSpeed = 3;
+            
+            this.setSpeed(0);
+            
             this.__targetSpot = this.getPosition();
             
             this.onCollideGroup('PLAYER_BULLET', this.die);
+            
+            // this.onCollideGroup('ENEMY', this.bounce);
+            
+            this._collisionGroup = 'ENEMY';
         }
         ,preStep : function(){
+            if(this.getSpeed() < this._maxSpeed){
+                this.setSpeed(this.getSpeed() + ((this._maxSpeed - this.getSpeed())/20));
+            }
             // Step 1 are we too close to the player
             var playerPosition = require('game/game').player.getPosition();
             var playerDistance = TwoCylinder.Engine.Geometry.distanceToPoint(this.getPosition(),playerPosition);
@@ -50,8 +60,20 @@ function(require,_, TwoCylinder, EnemySprite, EnemySprite2){
                 this.rotateTowards(TwoCylinder.Engine.Geometry.angleToPoint(this.getPosition(), this.__targetSpot));
             }
         }
-        ,die : function(){
-            require('game/game').getWorld().removeInstance(this);
+        ,die : function(other){
+            var world = require('game/game').getWorld();
+            world.removeInstance(this);
+            world.removeInstance(other);
+            console.log("DEAD");
+        }
+        ,bounce : function(other){
+            this.setDirection(
+                TwoCylinder.Engine.Geometry.angleToPoint(
+                    other.getBounding().getCenter(), 
+                    this.getBounding().getCenter()
+                )
+            );
+            this.setSpeed(this.getSpeed() / 2);
         }
     });
 });

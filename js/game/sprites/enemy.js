@@ -2,33 +2,42 @@
     This script contains the enemy entity sprite
 */
 define([
-    'TwoCylinder'
+    'TwoCylinder',
+    'sprites/particles/cell_nodule'
 ],
 
-function(TwoCylinder){
+function(TwoCylinder, CellNodule){
     return TwoCylinder.Engine.Appearance.extend({
         initialize : function(){
+            this.length = 14;
+            this.width = 20;
+            
             options = {
                 bounding : new TwoCylinder.Engine.BoundingCircle({
                     x : 0
                     ,y : 0
-                    ,radius : 30
+                    ,radius : this.width
                 })
             };
-            this.length = 14;
-            this.width = 20;
-            
             this.rotation = 0;
             this.rotateSpeed = 0.0175;
             this.targetRotation = this.rotation;
+            
+            this.tailControl = new CellNodule({
+                fill : false,
+                stroke : false,
+                wiggle : 30,
+                friction : 10
+            });
             
             this._super('initialize',options);
         }
     
         ,draw : function(canvas,x,y,rotation,scale,entity){
             var context = canvas.getContext('2d');
-            context.beginPath();
             context.save();
+            
+            context.beginPath();
 
             // step rotation
             this.stepRotation();
@@ -40,11 +49,33 @@ function(TwoCylinder){
             context.lineTo(x - this.width, y - this.length);
             context.arc(x, y - this.length, this.width, Math.PI, 2*Math.PI, false);
             context.lineTo(x + this.width, y + this.length);
-            context.fillStyle = 'rgba(100,100,150, 0.8)';
+            
+            context.fillStyle = 'rgba(100,100,150, 0.85)';
             context.fill();
-            context.lineWidth = 3;
-            context.strokeStyle = '#006';
+            
+            /*
+             * Draw tail?
+            context.beginPath();
+            this.tailControl.move();
+            var tailStart = {x : x, y : (y + this.length + this.width)};
+            var tailLocation = this.tailControl.getCenter();
+            context.moveTo(tailStart.x, tailStart.y);
+            context.bezierCurveTo(
+                    // anchor point 1
+                    tailStart.x,
+                    tailStart.y + 20,
+                    // anchor point 2
+                    tailStart.x + tailLocation.x,
+                    tailStart.y + 40,
+                    // to point
+                    tailStart.x + tailLocation.x,
+                    tailStart.y + 40
+                );
+            context.lineWidth = 10;
+            context.strokeStyle = 'rgba(100,100,150, 0.85)';
             context.stroke();
+            */
+            
             context.restore();
         }
         ,stepRotation : function(){

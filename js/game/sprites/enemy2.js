@@ -3,7 +3,7 @@
 */
 define([
     'TwoCylinder',
-    'sprites/assets/cell_nodule'
+    'sprites/particles/cell_nodule'
 ],
 
 function(TwoCylinder, CellNodule){
@@ -17,16 +17,16 @@ function(TwoCylinder, CellNodule){
                 })
             };
             this.layers = [
-               new CellNodule({fill : 'rgba(255,150,100,0.35)', radius:20, wiggle: 10, resistence: 20}),
-               new CellNodule({fill : 'rgba(225,225,100,0.35)', radius:20, wiggle: 10, resistence: 20}),
-               new CellNodule({fill : 'rgba(150,255,100,0.35)', radius:20, wiggle: 10, resistence: 20}),
+               new CellNodule({fill : 'rgba(255,150,100,0.35)', radius:20, wiggle: 10, friction: 20}),
+               new CellNodule({fill : 'rgba(225,225,100,0.35)', radius:20, wiggle: 10, friction: 20}),
+               new CellNodule({fill : 'rgba(150,255,100,0.35)', radius:20, wiggle: 10, friction: 20}),
            ];
             
             this.nodules = [
-                new CellNodule({fill : '#c33', radius:5, wiggle: 25, resistence: 30}),
-                new CellNodule({fill : '#c33', radius:4, wiggle: 25, resistence: 30}),
-                new CellNodule({fill : '#c33', radius:3, wiggle: 25, resistence: 30}),
-                new CellNodule({fill : '#c33', radius:3, wiggle: 25, resistence: 30})
+                new CellNodule({fill : '#c33', radius:5, wiggle: 25, friction: 30}),
+                new CellNodule({fill : '#c33', radius:4, wiggle: 25, friction: 30}),
+                new CellNodule({fill : '#c33', radius:3, wiggle: 25, friction: 30}),
+                new CellNodule({fill : '#c33', radius:3, wiggle: 25, friction: 30})
             ];
 
             this.wiggleSize = 10;
@@ -37,16 +37,18 @@ function(TwoCylinder, CellNodule){
             var context = canvas.getContext('2d');
             
             _.each(this.layers,function(elem){
+                elem.move();
                 elem.draw(canvas,x,y,rotation,scale);
             });
             
             _.each(this.nodules,function(elem){
+                elem.move();
                 elem.draw(canvas,x,y,rotation,scale);
             });
             
             context.beginPath();
             context.arc(x, y, 20, 0, 2 * Math.PI, false);
-            context.fillStyle = 'rgba(220,220,80,0.35)';
+            context.fillStyle = 'rgba(220,220,80,0.2)';
             context.fill();
         }
     });
